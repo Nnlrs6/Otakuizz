@@ -1,0 +1,3021 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Otakuizz by Nino</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Pacifico|Lobster|Roboto:400,500&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Style global commun */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f7f7f7;
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+    }
+    /* Pages de navigation (masquées par défaut sauf la page active) */
+    .page {
+      display: none;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .active {
+      display: block;
+    }
+    /* Header du site (utilisé sur la page d'accueil) */
+    #home-page header {
+      background: linear-gradient(135deg, #6D83F2, #4A90E2);
+      color: #fff;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    #home-page header h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 3em;
+      margin: 0;
+    }
+    #home-page header p {
+      font-family: 'Lobster', cursive;
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+    /* Boutons de navigation sur la page d'accueil */
+    #home-page .menu {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    #home-page .menu button {
+      background: #4A90E2;
+      border: none;
+      color: #fff;
+      padding: 15px 25px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-family: 'Roboto', sans-serif;
+    }
+    #home-page .menu button:hover {
+      background: #357ABD;
+    }
+    /* Score général affiché sur la page d'accueil */
+    #home-page .global-score {
+      margin-top: 30px;
+      font-size: 1.2em;
+      text-align: center;
+      font-weight: 500;
+    }
+    /* Bouton retour utilisé sur chaque quiz */
+    .back-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.3s;
+    }
+    .back-btn:hover {
+      background: #555;
+    }
+    /* Style de la zone de quiz pour chaque manga */
+    .quiz-container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .quiz-container h2 {
+      font-family: 'Lobster', cursive;
+      font-size: 2em;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .question-block {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .question-text {
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .option-btn {
+      flex: 1 1 calc(50% - 10px);
+      background: #fff;
+      border: 2px solid;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Roboto', sans-serif;
+    }
+    .option-btn:hover {
+      opacity: 0.9;
+    }
+    .option-btn.correct {
+      background: #28a745;
+      border-color: #28a745;
+      color: #fff;
+    }
+    .option-btn.incorrect {
+      background: #dc3545;
+      border-color: #dc3545;
+      color: #fff;
+    }
+    .submit-btn {
+      background: #4A90E2;
+      color: #fff;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.3s;
+      display: block;
+      margin: 30px auto 10px;
+    }
+    .submit-btn:hover {
+      background: #357ABD;
+    }
+    .score-display {
+      text-align: center;
+      font-size: 1.3em;
+      margin-top: 20px;
+      font-weight: 500;
+    }
+    /* Thèmes personnalisés par manga */
+    /* Slime (vert) */
+    .theme-slime .quiz-container { border-top: 6px solid #4CAF50; }
+    /* Jujutsu (violet) */
+    .theme-jujutsu .quiz-container { border-top: 6px solid #9C27B0; }
+    /* One Piece (indigo) */
+    .theme-onepiece .quiz-container { border-top: 6px solid #3F51B5; }
+    /* Demon Slayer (rouge) */
+    .theme-demonslayer .quiz-container { border-top: 6px solid #D32F2F; }
+    /* My Hero Academia (orange) */
+    .theme-mha .quiz-container { border-top: 6px solid #FF9800; }
+    /* Dragon Ball (orange profond) */
+    .theme-dbz .quiz-container { border-top: 6px solid #FB8C00; }
+    /* Naruto (rouge orangé) */
+    .theme-naruto .quiz-container { border-top: 6px solid #FF5722; }
+    /* Chainsaw Man (gris) */
+    .theme-chainsaw .quiz-container { border-top: 6px solid #616161; }
+    /* Black Clover (vert foncé) */
+    .theme-blackclover .quiz-container { border-top: 6px solid #2E7D32; }
+  </style>
+</head>
+<body>
+  <!-- Page d'accueil -->
+  <div id="home-page" class="page active">
+    <header>
+      <h1>Otakuizz by Nino</h1>
+      <p>Dédié à Fun Life Mood</p>
+    </header>
+    <div class="menu">
+      <button onclick="showPage('page-slime')">Moi, quand je me réincarne en Slime</button>
+      <button onclick="showPage('page-jujutsu')">Jujutsu Kaisen</button>
+      <button onclick="showPage('page-onepiece')">One Piece</button>
+      <button onclick="showPage('page-demonslayer')">Demon Slayer</button>
+      <button onclick="showPage('page-mha')">My Hero Academia</button>
+      <button onclick="showPage('page-dbz')">Dragon Ball</button>
+      <button onclick="showPage('page-naruto')">Naruto</button>
+      <button onclick="showPage('page-chainsaw')">Chainsaw Man</button>
+      <button onclick="showPage('page-blackclover')">Black Clover</button>
+    </div>
+    <div class="global-score" id="globalScoreDisplay">
+      Score général : Aucun quiz tenté pour le moment.
+    </div>
+  </div>
+
+  <!-- Les pages de quiz pour chaque manga seront générées dynamiquement -->
+  <!-- Chaque page portera une classe "theme-..." pour appliquer un style personnalisé -->
+  <div id="quiz-pages-container"></div>
+
+  <footer>
+    <p>&copy; 2025 Otakuizz by Nino. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    // Les données du quiz (9 catégories, 30 questions chacune)
+    const quizData = {
+      slime: [
+        {
+          question: "Quel était le nom et la profession du protagoniste avant sa réincarnation en slime ?",
+          options: [
+            "Satoru Mikami, employé de bureau",
+            "Hiroshi Tanaka, enseignant",
+            "Yusuke Kato, ingénieur",
+            "Kenta Suzuki, agriculteur"
+          ],
+          correct: 0
+        },
+        {
+          question: "Dans quel monde Rimuru Tempest se retrouve-t-il après sa réincarnation ?",
+          options: [
+            "Un monde fantastique peuplé de diverses races et de magie",
+            "Un futur dystopique",
+            "Un univers parallèle moderne",
+            "Une Terre post-apocalyptique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel pouvoir unique Rimuru acquiert-il dès ses débuts ?",
+          options: [
+            "Le pouvoir 'Predator' qui lui permet d’absorber et d’utiliser les capacités d’autres êtres",
+            "La force surhumaine",
+            "La capacité de voler",
+            "L’invisibilité"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Rimuru parvient-il à gagner la confiance de la tribu des orcs ?",
+          options: [
+            "En les aidant face à des menaces communes et en faisant preuve de compassion et de sagesse",
+            "En les combattant",
+            "En les ignorant",
+            "En trahissant d’autres tribus"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle de Veldora dans l’évolution de Rimuru ?",
+          options: [
+            "Veldora est un dragon emprisonné que Rimuru libère et qui devient un allié puissant",
+            "Un roi orc",
+            "Un sorcier maléfique",
+            "Un guerrier rival"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment le contrat conclu par Rimuru avec les créatures influence-t-il son pouvoir ?",
+          options: [
+            "Il lui permet d’absorber et d’intégrer de nouveaux pouvoirs, augmentant ainsi sa force",
+            "Il le rend vulnérable",
+            "Il limite ses capacités",
+            "Il le transforme en humain"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles stratégies Rimuru utilise-t-il pour unifier les différentes races du monde ?",
+          options: [
+            "Diplomatie, coopération militaire et alliances",
+            "La force brute",
+            "La magie noire",
+            "La ruse et la trahison"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la cité de Jura Tempest est-elle fondée et quel rôle joue-t-elle dans l’intrigue ?",
+          options: [
+            "Fondée par Rimuru, elle sert de centre de prospérité et de coexistence",
+            "Un village abandonné",
+            "Une forteresse ennemie",
+            "Une cité détruite"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quels sont les principaux antagonistes rencontrés durant les premiers arcs ?",
+          options: [
+            "Des démons et groupes hostiles cherchant à semer le chaos",
+            "Des extraterrestres",
+            "Des humains pacifiques",
+            "Des esprits amicaux"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi consiste l’évolution des capacités de Rimuru lorsqu’il absorbe les pouvoirs de ses adversaires ?",
+          options: [
+            "Il gagne de nouvelles techniques et renforce ses aptitudes",
+            "Il perd sa force",
+            "Il se transforme en pierre",
+            "Il oublie son passé"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée illustre-t-elle la montée en puissance de Rimuru par rapport au manga ?",
+          options: [
+            "Par des scènes de combat dynamiques, des effets visuels saisissants et un rythme narratif soutenu",
+            "En se concentrant uniquement sur la narration",
+            "En supprimant les scènes de combat",
+            "En allongeant les dialogues"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est l’impact de l’alliance entre les tribus sur la stabilité du monde de Rimuru ?",
+          options: [
+            "Elle instaure une paix fragile et ouvre une nouvelle ère de coopération",
+            "Elle provoque des guerres incessantes",
+            "Elle isole les tribus",
+            "Elle entraîne la chute de toutes les nations"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se manifeste la rivalité entre Rimuru et les démons de haut rang ?",
+          options: [
+            "Par des affrontements épiques où Rimuru doit prouver sa supériorité",
+            "Par des débats pacifiques",
+            "Par une trahison inoffensive",
+            "Par l'ignorance totale"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue la magie du monde dans le développement des technologies de Rimuru ?",
+          options: [
+            "La magie se combine avec des techniques innovantes pour renforcer les pouvoirs",
+            "La magie est absente",
+            "La magie détruit la technologie",
+            "La magie est contrôlée par les démons"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’ascension de Rimuru modifie-t-elle les rapports de force entre les nations ?",
+          options: [
+            "Elle renverse l’équilibre des pouvoirs et instaure une ère nouvelle d’unité",
+            "Elle renforce l'ordre ancien",
+            "Elle ne change rien",
+            "Elle provoque l'anarchie totale"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles conséquences les batailles inter-tribales ont-elles sur l’environnement politique du monde ?",
+          options: [
+            "Elles entraînent de lourds bouleversements et la réorganisation des alliances",
+            "Elles apportent la paix",
+            "Elles n'ont aucun impact",
+            "Elles renforcent le statu quo"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Rimuru parvient-il à instaurer la paix dans des zones autrefois déchirées par la guerre ?",
+          options: [
+            "En négociant et intervenant militairement quand nécessaire",
+            "En les abandonnant",
+            "En les exilant",
+            "En utilisant la magie noire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le sens symbolique du nom 'Tempest' dans l’évolution du personnage ?",
+          options: [
+            "Il évoque la force, le changement et un renouveau dévastateur",
+            "Il signifie calme et sérénité",
+            "Il désigne la faiblesse",
+            "Il n'a aucune signification"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée met-elle en scène les moments clés des alliances et trahisons ?",
+          options: [
+            "Par des séquences intenses soulignant l’impact émotionnel de chaque événement",
+            "Par des scènes statiques",
+            "Par des dialogues longs et ennuyeux",
+            "Sans effet particulier"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue la prophétie dans le destin de Rimuru ?",
+          options: [
+            "Elle annonce l’avènement d’un leader capable d’unifier toutes les races",
+            "Elle prédit une chute inévitable",
+            "Elle est ignorée",
+            "Elle est fictive"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les artefacts magiques influencent-ils la progression de l’intrigue ?",
+          options: [
+            "Ils confèrent des pouvoirs supplémentaires essentiels aux batailles décisives",
+            "Ils n'ont aucune influence",
+            "Ils affaiblissent les héros",
+            "Ils sont purement décoratifs"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle est la place des conseils des démons dans la gouvernance du monde créé par Rimuru ?",
+          options: [
+            "Ils conseillent Rimuru sur des questions stratégiques et influencent les décisions politiques",
+            "Ils sont complètement absents",
+            "Ils prennent le pouvoir",
+            "Ils sont des ennemis"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment le conflit avec une entité supérieure remet-il en question la légitimité de Rimuru ?",
+          options: [
+            "Il teste ses limites et le force à redoubler d’ingéniosité pour asseoir son autorité",
+            "Il confirme sa légitimité sans effort",
+            "Il n’a aucun impact",
+            "Il le rend vulnérable"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi l’évolution de Rimuru affecte-t-elle sa personnalité et ses choix moraux ?",
+          options: [
+            "Il devient plus réfléchi, sage et stratège tout en restant fidèle à ses principes",
+            "Il devient cruel et impitoyable",
+            "Il perd toute humanité",
+            "Il reste identique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée traite-t-elle les différences de rythme par rapport au manga ?",
+          options: [
+            "En accélérant certains passages et en allongeant d’autres pour mieux capturer l’émotion",
+            "En suivant exactement le manga",
+            "En ralentissant tout",
+            "Sans modification"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage secondaire exerce la plus grande influence sur les décisions stratégiques de Rimuru ?",
+          options: [
+            "Des conseillers comme Ranga ou Shuna",
+            "Un orc anonyme",
+            "Un démon mineur",
+            "Un humain du passé"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroulent les batailles majeures et quels enjeux politiques y sont associés ?",
+          options: [
+            "Les batailles épiques redéfinissent l’équilibre des pouvoirs",
+            "Elles sont insignifiantes",
+            "Elles se terminent toujours par une défaite",
+            "Elles n’ont aucune dimension politique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles techniques Rimuru utilise-t-il pour assimiler les pouvoirs adverses ?",
+          options: [
+            "Il absorbe les pouvoirs grâce à son aptitude unique",
+            "Il vole les pouvoirs",
+            "Il copie sans comprendre",
+            "Il les ignore"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les épisodes dédiés aux conflits inter-tribaux renforcent-ils la mythologie de l’univers ?",
+          options: [
+            "Ils approfondissent l’histoire en révélant traditions et enjeux de pouvoir",
+            "Ils distraient de l’intrigue principale",
+            "Ils sont des digressions inutiles",
+            "Ils simplifient l’intrigue"
+          ],
+          correct: 0
+        },
+        {
+          question: "De quelle manière l’arc final de l’adaptation animée conclut-il l’ascension de Rimuru ?",
+          options: [
+            "Il se termine par une victoire décisive, scellant son destin de leader et ouvrant la voie à la paix",
+            "Il se termine en échec total",
+            "Il laisse l’histoire inachevée",
+            "Il conclut par un cliffhanger"
+          ],
+          correct: 0
+        }
+      ],
+      jujutsu: [
+        {
+          question: "Quel est le nom complet du protagoniste et quelle est la nature de son Quirk ?",
+          options: [
+            "Yuji Itadori, doté d'une force physique exceptionnelle",
+            "Yuji Itadori, possédant la télékinésie",
+            "Megumi Fushiguro, qui contrôle les ombres",
+            "Nobara Kugisaki, experte en marteaux"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Yuji Itadori entre-t-il en contact avec le démon Sukuna ?",
+          options: [
+            "En avalant l'un des doigts maudits de Sukuna",
+            "En touchant un artefact ancien",
+            "En invoquant une incantation",
+            "En se battant contre un démon mineur"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle fondamental de l’école de Jujutsu ?",
+          options: [
+            "Former des sorciers spécialisés pour combattre et sceller les malédictions",
+            "Enseigner la magie blanche uniquement",
+            "Former des guerriers sans pouvoirs",
+            "Servir de lieu de refuge sans combat"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se distinguent les techniques de combat de Megumi Fushiguro ?",
+          options: [
+            "Il invoque des shikigamis pour l’aider",
+            "Il utilise uniquement des armes blanches",
+            "Il se bat sans aucune technique particulière",
+            "Il utilise la force brute exclusivement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle est la particularité de la technique 'Inverted Spear of Heaven' ?",
+          options: [
+            "C'est une arme anti-malédiction capable de neutraliser les pouvoirs ennemis",
+            "Elle augmente la vitesse de l'utilisateur",
+            "Elle permet de voler",
+            "Elle rend invisible"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée présente-t-elle l’origine des malédictions ?",
+          options: [
+            "Par des flashbacks et des explications détaillées sur l’énergie négative",
+            "Sans aucune explication",
+            "En utilisant un narrateur omniscient",
+            "Par des visions futuristes"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est l’impact de la présence de Sukuna sur la vie de Yuji ?",
+          options: [
+            "Elle impose un combat intérieur constant entre le bien et le mal",
+            "Elle le rend invincible",
+            "Elle lui donne des pouvoirs illimités",
+            "Elle le prive de toute force"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Nobara Kugisaki utilise-t-elle son Quirk ?",
+          options: [
+            "En manipulant marteaux, clous et poupées pour infliger des dégâts",
+            "En invoquant des esprits protecteurs",
+            "En utilisant des techniques de guérison",
+            "En se transformant en animal"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle central joue Gojo Satoru ?",
+          options: [
+            "Il est le mentor exceptionnel qui forme et protège les élèves grâce à ses pouvoirs hors normes",
+            "Il est un simple professeur sans pouvoirs",
+            "Il est le principal antagoniste",
+            "Il ne joue aucun rôle"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi l’examen de Jujutsu Tech marque-t-il un tournant ?",
+          options: [
+            "Il révèle le niveau des compétences des élèves et les confronte à des malédictions redoutables",
+            "Il se déroule sans incident",
+            "Il est annulé par un événement imprévu",
+            "Il se termine par une célébration"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les malédictions se matérialisent-elles dans Jujutsu Kaisen ?",
+          options: [
+            "Sous forme d’entités spirituelles nées de l’énergie négative",
+            "Comme des monstres mécaniques",
+            "Comme des animaux géants",
+            "Sans forme particulière"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences l’adaptation animée met-elle en avant dans l’arc d’examen ?",
+          options: [
+            "Des séquences de combat plus détaillées et un rythme plus rapide",
+            "Une narration plus lente",
+            "Des scènes moins violentes",
+            "Une absence totale de combat"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’histoire explique-t-elle l’origine et le fonctionnement des sceaux magiques ?",
+          options: [
+            "Par des explications rituelles et des démonstrations de l’énergie spirituelle",
+            "Sans jamais en parler",
+            "En les liant à des événements aléatoires",
+            "En les attribuant à des dieux oubliés"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle de Mahito dans l’univers ?",
+          options: [
+            "Il incarne la pureté destructrice, opposée aux valeurs humaines",
+            "Il est un héros incompris",
+            "Il est un mentor pour les sorciers",
+            "Il n'a aucune idéologie particulière"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment évolue la relation entre Yuji et ses camarades ?",
+          options: [
+            "Elle se renforce par la solidarité et le sacrifice partagé",
+            "Elle s'effrite progressivement",
+            "Elle reste inchangée",
+            "Elle se transforme en rivalité permanente"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment clé illustre la confrontation entre Gojo et une entité maléfique ?",
+          options: [
+            "La démonstration de son pouvoir démesuré lors d’un combat décisif",
+            "Un simple duel amical",
+            "Une conversation philosophique",
+            "Une absence de confrontation"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la technique de Gojo redéfinit-elle le jujutsu ?",
+          options: [
+            "Sa capacité à manipuler l’espace et le temps repousse les limites traditionnelles",
+            "Elle ne change rien",
+            "Elle est identique à celles des autres",
+            "Elle affaiblit les malédictions"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’équipe de Jujutsu Tech adapte-t-elle ses stratégies ?",
+          options: [
+            "En combinant compétences et en innovant avec sceaux et talismans",
+            "En les affrontant sans stratégie",
+            "En abandonnant les combats",
+            "En se retirant"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est l’impact de l’arc de Shibuya sur l’équilibre des malédictions ?",
+          options: [
+            "Il bouleverse l’ordre établi et remet en question les méthodes de combat",
+            "Il apporte une paix totale",
+            "Il n'a aucun impact",
+            "Il améliore la situation pour les sorciers"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime développe-t-il le passé douloureux de certains personnages secondaires ?",
+          options: [
+            "Grâce à des flashbacks émouvants qui dévoilent leurs traumatismes",
+            "En ignorant leur passé",
+            "En se concentrant uniquement sur le présent",
+            "En exagérant leur bonheur"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi les dilemmes moraux influencent-ils les choix des protagonistes ?",
+          options: [
+            "Ils obligent à des sacrifices et à remettre en cause la vision du bien et du mal",
+            "Ils n'ont aucune influence",
+            "Ils simplifient les combats",
+            "Ils créent une confusion totale"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment le manga aborde-t-il la notion de sacrifice ?",
+          options: [
+            "En montrant que la protection des innocents passe par des renoncements douloureux",
+            "En évitant le thème du sacrifice",
+            "En glorifiant le sacrifice de manière excessive",
+            "En le traitant de façon humoristique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle est la signification des talismans utilisés pour renforcer les sceaux ?",
+          options: [
+            "Ils concentrent et amplifient l’énergie spirituelle pour protéger ou attaquer",
+            "Ils sont purement décoratifs",
+            "Ils réduisent la puissance des malédictions",
+            "Ils n'ont aucun effet réel"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée gère-t-elle le rythme des combats ?",
+          options: [
+            "En équilibrant scènes rapides et moments stratégiques pour maintenir une tension constante",
+            "Elle ralentit tout",
+            "Elle accélère sans discernement",
+            "Elle se concentre uniquement sur le dialogue"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle des flashbacks dans la révélation des origines des techniques ?",
+          options: [
+            "Ils éclairent les racines historiques et spirituelles des techniques",
+            "Ils n'apportent aucune information",
+            "Ils rendent l'intrigue confuse",
+            "Ils sont utilisés à mauvais escient"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’évolution des techniques de combat est-elle montrée à travers les saisons ?",
+          options: [
+            "Par l’apprentissage progressif et l’introduction de nouvelles stratégies lors des affrontements",
+            "Sans aucune évolution",
+            "En répétant toujours les mêmes techniques",
+            "En se limitant aux techniques de base"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi l’arc des examens accentue-t-il la tension entre tradition et innovation ?",
+          options: [
+            "Il confronte les méthodes ancestrales aux approches modernes, obligeant à innover",
+            "Il se passe sans conflit",
+            "Il concerne uniquement l'aspect académique",
+            "Il favorise l'innovation exclusivement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage subit une transformation majeure après un combat décisif ?",
+          options: [
+            "Un personnage comme Yuji ou Megumi voit ses capacités évoluer considérablement",
+            "Aucun personnage ne change",
+            "Tout le monde reste le même",
+            "Seul le méchant change"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée traite-t-elle le passage de l’humour au drame ?",
+          options: [
+            "Elle équilibre moments légers et séquences intenses pour une expérience riche",
+            "Elle privilégie uniquement l'humour",
+            "Elle est uniquement dramatique",
+            "Elle change de ton de manière incohérente"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quels éléments narratifs relient les arcs majeurs de Jujutsu Kaisen ?",
+          options: [
+            "Des thèmes comme le destin, le sacrifice et la lutte contre l’obscurité",
+            "Aucun lien n'existe",
+            "Ils sont complètement indépendants",
+            "Ils sont liés uniquement par les combats"
+          ],
+          correct: 0
+        }
+      ],
+      onepiece: [
+        {
+          question: "Quel est le rêve ultime de Monkey D. Luffy ?",
+          options: [
+            "Devenir le Roi des Pirates en trouvant le One Piece",
+            "Devenir un célèbre cuisinier",
+            "Devenir un maître des arts martiaux",
+            "Devenir le chef d'un clan samouraï"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Luffy a-t-il acquis le pouvoir de son fruit du démon ?",
+          options: [
+            "En mangeant le fruit Gomu Gomu, lui conférant une élasticité unique et le privant de la nage",
+            "En étant mordu par un serpent géant",
+            "En suivant un entraînement intensif",
+            "En étant né avec ce pouvoir"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Nami dans l’équipage ?",
+          options: [
+            "Tracer les routes et gérer la météo pour guider l’équipage",
+            "Combattre les ennemis",
+            "Cuisiner pour l’équipage",
+            "Réparer le navire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment est expliqué l’origine du navire 'Going Merry' ?",
+          options: [
+            "Il est offert comme symbole d’espoir et de camaraderie",
+            "Il est gagné lors d’un tournoi",
+            "Il est volé à un ennemi",
+            "Il est construit par l’équipage"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles sont les caractéristiques principales de l’arc East Blue ?",
+          options: [
+            "Les origines de chaque membre et leurs rêves personnels",
+            "Une histoire de trahison",
+            "Une quête pour un trésor caché",
+            "Une simple aventure de survie"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Zoro prouve-t-il sa détermination ?",
+          options: [
+            "En utilisant son style Santoryu (trois sabres) lors de combats intenses",
+            "En jouant de la musique",
+            "En se cachant des ennemis",
+            "En utilisant la magie"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rêve personnel de Sanji ?",
+          options: [
+            "Trouver All Blue, une mer légendaire regorgeant de poissons rares",
+            "Devenir le navigateur de l’équipage",
+            "Devenir médecin",
+            "Devenir le capitaine"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc d’Alabasta met-il en lumière les enjeux politiques ?",
+          options: [
+            "En exposant la lutte contre un tyran et les intrigues de pouvoir",
+            "En montrant une simple aventure",
+            "En se concentrant uniquement sur l’action",
+            "En ne parlant pas de politique"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi l’arrivée de Robin modifie-t-elle la dynamique de l’équipage ?",
+          options: [
+            "Elle apporte sagesse et mystère, enrichissant l’intrigue",
+            "Elle cause des conflits majeurs",
+            "Elle ne change rien",
+            "Elle affaiblit l’équipage"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc de Water 7 et Enies Lobby transforme-t-il l’unité des Chapeaux de paille ?",
+          options: [
+            "En renforçant la cohésion par la lutte commune pour sauver un camarade",
+            "En divisant l’équipage",
+            "En supprimant certains membres",
+            "En changeant de navire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent Franky et Brook dans l’évolution de l’équipage ?",
+          options: [
+            "Ils apportent des compétences uniques qui enrichissent l’équipe",
+            "Ils sont des antagonistes",
+            "Ils ne participent pas aux combats",
+            "Ils sont uniquement comiques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la rivalité entre Luffy et certains antagonistes évolue-t-elle ?",
+          options: [
+            "Par des confrontations épiques qui testent la détermination de Luffy",
+            "Par des dialogues pacifiques",
+            "Par des compétitions sportives",
+            "Sans confrontation"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact le Gouvernement Mondial exerce-t-il sur l’univers des pirates ?",
+          options: [
+            "Il représente une autorité oppressive que les pirates cherchent à défier",
+            "Il aide les pirates à progresser",
+            "Il n’a aucun impact",
+            "Il est bienveillant"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée met-elle en scène les batailles navales et terrestres ?",
+          options: [
+            "Avec des animations dynamiques et une bande-son épique",
+            "Avec des effets sonores minimaux",
+            "Sans musique",
+            "En se concentrant uniquement sur le dialogue"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles spécificités caractérisent les fruits du démon ?",
+          options: [
+            "Ils confèrent des pouvoirs extraordinaires mais imposent aussi des faiblesses",
+            "Ils ne font rien",
+            "Ils sont uniquement décoratifs",
+            "Ils rendent invincible"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc de Dressrosa révèle-t-il la complexité des alliances ?",
+          options: [
+            "En montrant des trahisons, des pactes et des luttes de pouvoir",
+            "En simplifiant les relations",
+            "En évitant toute confrontation",
+            "En se concentrant sur un seul personnage"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Shanks dans l’évolution de Luffy ?",
+          options: [
+            "Il est une figure inspirante qui incarne la liberté et motive Luffy",
+            "Il est un ennemi juré",
+            "Il est un mentor sans pouvoirs",
+            "Il apparaît uniquement en flashback"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation animée aborde-t-elle les différences entre les arcs narratifs ?",
+          options: [
+            "En adaptant le style visuel et le rythme en fonction du contexte",
+            "En utilisant le même style pour tous les arcs",
+            "En ignorant les différences",
+            "En mélangeant les arcs sans distinction"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la légende de Gol D. Roger influence-t-elle Luffy ?",
+          options: [
+            "Elle sert de symbole d’espoir qui inspire Luffy à défier l’ordre établi",
+            "Elle n'a aucun impact",
+            "Elle est oubliée",
+            "Elle est critiquée par Luffy"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se forme l’esprit d’équipe au sein des Chapeaux de paille ?",
+          options: [
+            "Par des combats partagés et des moments de solidarité renforçant la confiance",
+            "Par la compétition interne",
+            "Par des confrontations constantes",
+            "Par l'individualisme"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles alliances stratégiques se nouent avec d’autres équipages ?",
+          options: [
+            "Des partenariats se forment pour combattre des ennemis communs",
+            "Aucune alliance n'est faite",
+            "Les alliances sont toujours brisées",
+            "Elles sont imposées par le Gouvernement Mondial"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la quête du trésor One Piece est-elle liée aux légendes de l’univers ?",
+          options: [
+            "Elle est entourée de mystères historiques et prophétiques motivant la quête de liberté",
+            "Elle est purement matérielle",
+            "Elle n'a aucune dimension mythologique",
+            "Elle est expliquée dans une simple légende"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi les batailles navales et les duels individuels contrastent-ils ?",
+          options: [
+            "Elles alternent entre affrontements massifs et duels intimes",
+            "Elles sont toutes identiques",
+            "Elles ne contrastent pas",
+            "Elles se terminent toujours par des victoires faciles"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel cliffhanger marque la fin de l’arc de Wano ?",
+          options: [
+            "Un suspense dramatique annonçant de nouveaux défis",
+            "Une fin heureuse sans suspense",
+            "Un retournement inattendu non lié à l’histoire",
+            "Un simple changement de décor"
+          ],
+          correct: 0
+        }
+      ],
+      demonslayer: [
+        {
+          question: "Quel est le nom complet de Tanjiro Kamado et quelle tragédie frappe sa famille dès le début ?",
+          options: [
+            "Tanjiro Kamado, sa famille est massacrée et Nezuko devient un démon",
+            "Tanjiro Kamado, il perd son emploi",
+            "Tanjiro Kamado, il est trahi par un ami",
+            "Tanjiro Kamado, il est exilé de son village"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Tanjiro découvre-t-il la transformation de Nezuko ?",
+          options: [
+            "En rentrant chez lui et constatant le massacre familial",
+            "En lisant un journal",
+            "Par un rêve prémonitoire",
+            "Lors d'un combat"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle technique de respiration Tanjiro apprend-il ?",
+          options: [
+            "La Respiration de l’Eau, apprise grâce à un entraînement rigoureux",
+            "La Respiration du Feu",
+            "La Respiration de la Terre",
+            "La Respiration de l’Air"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les Piliers (Hashira) ?",
+          options: [
+            "Ils sont des combattants d’élite qui encadrent la lutte contre les démons",
+            "Ils servent uniquement de conseillers",
+            "Ils ne participent pas aux combats",
+            "Ils sont des membres honorifiques sans pouvoir"
+          ],
+          correct: 0
+        },
+        {
+          question: "Qui est l’antagoniste principal, Muzan Kibutsuji ?",
+          options: [
+            "Le démon originel, impitoyable et manipulateur",
+            "Un simple démon mineur",
+            "Un héros déchu",
+            "Un chef de village"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Tanjiro canalise-t-il sa colère ?",
+          options: [
+            "En transformant sa douleur en détermination pour libérer une force accrue",
+            "En s'isolant complètement",
+            "En méditant en silence",
+            "En quittant son équipe"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences entre la Respiration de l’Eau et celle du Soleil ?",
+          options: [
+            "L’Eau est fluide et adaptable, le Soleil est plus puissante et ancestrale",
+            "Elles sont identiques",
+            "L’Eau est plus forte",
+            "Le Soleil est moins efficace"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime illustre-t-il la transformation de Nezuko ?",
+          options: [
+            "Par des images saisissantes montrant la lutte entre son humanité et sa nature démoniaque",
+            "Par un simple changement de couleur",
+            "Sans montrer de transformation",
+            "Par des séquences de rêve uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage aide Tanjiro lors de son entraînement ?",
+          options: [
+            "Sakonji Urokodaki, qui lui transmet techniques et philosophie",
+            "Zenitsu, qui le soutient",
+            "Inosuke, qui le pousse à combattre",
+            "Kanao Tsuyuri, qui l'accompagne"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi Zenitsu se distingue-t-il ?",
+          options: [
+            "Il est très peureux mais révèle une vitesse et une puissance redoutables en situation de stress",
+            "Il est toujours courageux",
+            "Il n'a aucune particularité",
+            "Il est calme et posé"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Inosuke complète-t-il le trio principal ?",
+          options: [
+            "Avec son approche brute et instinctive du combat",
+            "En apportant une stratégie raffinée",
+            "En jouant un rôle de mentor",
+            "En étant uniquement comique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement déclenche la quête de vengeance de Tanjiro ?",
+          options: [
+            "La découverte du massacre de sa famille et la transformation de Nezuko",
+            "La trahison d'un ami",
+            "La perte de son emploi",
+            "Un défi lancé par un démon mineur"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroule l’arc d’entraînement des Demon Slayers ?",
+          options: [
+            "Par des défis intenses et l’apprentissage progressif des techniques de respiration",
+            "Par une simple répétition de mouvements",
+            "Sans difficulté",
+            "Par des compétitions entre élèves"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Kanao Tsuyuri ?",
+          options: [
+            "Une combattante silencieuse dotée d’une grande compétence technique",
+            "Une antagoniste",
+            "Un mentor",
+            "Un personnage comique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la série explique-t-elle l’origine des malédictions ?",
+          options: [
+            "Elle les lie à l’influence de Muzan Kibutsuji et à la nature des démons",
+            "Elle n’explique rien",
+            "Elle attribue la malédiction à des erreurs humaines",
+            "Elle la considère comme mythique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment marque une évolution majeure dans les capacités de Tanjiro ?",
+          options: [
+            "Un combat intense contre un démon de rang supérieur",
+            "Un moment de repos",
+            "Une simple conversation",
+            "Une erreur de jugement"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la redécouverte de la Respiration du Soleil change-t-elle la donne ?",
+          options: [
+            "Elle offre une puissance inouïe et ouvre de nouvelles techniques",
+            "Elle le rend faible",
+            "Elle n'a aucun effet",
+            "Elle est inutile"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les démons mineurs contribuent-ils à la tension de l’intrigue ?",
+          options: [
+            "En multipliant les confrontations pour créer une menace constante",
+            "Ils apaisent les tensions",
+            "Ils sont simplement décoratifs",
+            "Ils sont ignorés"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment évolue la relation entre Tanjiro et Nezuko ?",
+          options: [
+            "Leur lien se renforce, illustrant l’amour fraternel et la lutte commune",
+            "Ils se détachent l'un de l'autre",
+            "Ils se disputent constamment",
+            "La relation reste inchangée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles stratégies l’équipe adopte-t-elle contre les démons de rang supérieur ?",
+          options: [
+            "En combinant leurs techniques individuelles pour des attaques coordonnées",
+            "En se battant chacun de leur côté",
+            "En fuyant systématiquement",
+            "En comptant uniquement sur la force brute"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc d’entraînement met-il en lumière la diversité des techniques de respiration ?",
+          options: [
+            "En exposant plusieurs styles et variations ancestrales",
+            "En se concentrant sur une seule technique",
+            "En les mélangeant sans distinction",
+            "En ignorant ces techniques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment fort illustre la confrontation décisive avec Muzan Kibutsuji ?",
+          options: [
+            "Un combat final intense opposant Tanjiro et ses alliés au chef des démons",
+            "Une simple dispute",
+            "Un match amical",
+            "Un entraînement commun"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les thèmes de la douleur et de la rédemption se manifestent-ils ?",
+          options: [
+            "Par des sacrifices consentis et des combats émotionnels",
+            "Par une absence totale d'émotion",
+            "Par des moments de joie constante",
+            "Par des célébrations répétitives"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la représentation des décors naturels renforce-t-elle l’atmosphère ?",
+          options: [
+            "Les paysages sublimes soulignent la beauté mélancolique et la dureté du monde",
+            "Les décors sont monotones",
+            "Les décors sont artificiels",
+            "Ils n'ont aucune influence"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les personnages secondaires enrichissent-ils la psychologie de Tanjiro ?",
+          options: [
+            "Leurs histoires apportent des perspectives et un réconfort moral",
+            "Ils n'ont aucun impact émotionnel",
+            "Ils compliquent l'intrigue",
+            "Ils sont uniquement présents pour le combat"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle symbolique des masques portés par certains Demon Slayers ?",
+          options: [
+            "Ils symbolisent la protection et la dissimulation de la douleur",
+            "Ils sont purement décoratifs",
+            "Ils représentent la trahison",
+            "Ils n'ont aucun symbolisme"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la transition entre les arcs narratifs est-elle traitée ?",
+          options: [
+            "Par des ponts narratifs fluides reliant l’entraînement aux grands conflits",
+            "Sans transition",
+            "Par des coupures brusques",
+            "Par un résumé rapide"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences majeures observe-t-on entre le manga et l’anime lors des combats ?",
+          options: [
+            "L’anime offre des animations plus fluides et des effets visuels accentués",
+            "Le manga est plus détaillé visuellement",
+            "Ils sont identiques",
+            "L’anime est moins dynamique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage subit une évolution marquante lors de la dernière saison ?",
+          options: [
+            "Zenitsu, qui gagne en courage et en efficacité",
+            "Tanjiro devient moins compétent",
+            "Inosuke perd son énergie",
+            "Nezuko ne change pas"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc final conclut-il l’histoire de Tanjiro ?",
+          options: [
+            "Par une confrontation épique scellant le destin des protagonistes",
+            "Par une défaite totale de Tanjiro",
+            "Par une fin ouverte sans résolution",
+            "Par un retournement de situation comique"
+          ],
+          correct: 0
+        }
+      ],
+      mha: [
+        {
+          question: "Quel est le nom complet du protagoniste et quel rêve aspire-t-il à réaliser ?",
+          options: [
+            "Izuku Midoriya, qui rêve de devenir un grand héros",
+            "Katsuki Bakugo, qui veut dominer le monde",
+            "Shoto Todoroki, qui veut fuir son passé",
+            "Ochaco Uraraka, qui rêve d'être riche"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment All Might a-t-il obtenu ses pouvoirs ?",
+          options: [
+            "Il a hérité d’un pouvoir miraculeux incarnant l’espoir et la justice",
+            "Il a inventé ses pouvoirs",
+            "Il a été mordu par un animal mutant",
+            "Il a gagné ses pouvoirs dans un tournoi"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le véritable nom d’Uravity et quel rôle joue-t-elle ?",
+          options: [
+            "Ochaco Uraraka, soutien et alliée clé à l’U.A.",
+            "Momo Yaoyorozu, la stratège",
+            "Tsuyu Asui, une combattante",
+            "Denki Kaminari, le comique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles sont les caractéristiques du Quirk de Deku ?",
+          options: [
+            "Il absorbe la force d’All Might et évolue grâce à un entraînement intensif",
+            "Il peut voler dès sa naissance",
+            "Il reste statique sans évolution",
+            "Il est inutile face aux ennemis"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroule l’examen d’entrée à l’Académie U.A. ?",
+          options: [
+            "Il teste la détermination, la créativité et le dépassement de défis extrêmes",
+            "Il est facile et sans enjeu",
+            "Il consiste uniquement en un test écrit",
+            "Il ne comprend aucune épreuve physique"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi Shoto Todoroki se démarque-t-il ?",
+          options: [
+            "Il possède à la fois le pouvoir du feu et de la glace, et un passé familial douloureux",
+            "Il a un pouvoir de téléportation",
+            "Il est le plus fort sans effort",
+            "Il ne se démarque pas vraiment"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime illustre-t-il la rivalité entre Deku et Bakugo ?",
+          options: [
+            "Par des confrontations émotionnelles et intenses révélant leurs différences",
+            "Par une simple compétition sportive",
+            "En les faisant s'entraider uniquement",
+            "En supprimant leur rivalité"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle des Villains dans cet univers ?",
+          options: [
+            "Ils représentent une menace constante forçant les héros à repousser leurs limites",
+            "Ils sont inoffensifs",
+            "Ils n'ont aucun rôle",
+            "Ils sont les seuls à gagner"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les séances d’entraînement sont-elles représentées ?",
+          options: [
+            "Par une progression graduelle et des techniques innovantes",
+            "Sans changement notable",
+            "En restant toujours les mêmes",
+            "En les annulant après le premier test"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles tactiques les héros emploient-ils ?",
+          options: [
+            "Ils combinent intelligence tactique, travail d’équipe et utilisation créative de leurs Quirks",
+            "Ils se battent de manière désordonnée",
+            "Ils fuient systématiquement",
+            "Ils comptent sur la chance"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact l’arrestation d’un héros a-t-il sur l’équipe de Deku ?",
+          options: [
+            "Elle expose la vulnérabilité du système héroïque et renforce la détermination",
+            "Elle rend l’équipe plus forte instantanément",
+            "Elle n'a aucun impact",
+            "Elle est ignorée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se développe la relation entre Deku et ses mentors ?",
+          options: [
+            "Grâce à un encadrement constant et des leçons de vie enrichissantes",
+            "Ils se détachent complètement",
+            "Il n'a pas de mentors",
+            "La relation reste superficielle"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement lors de l’examen de licence marque un tournant ?",
+          options: [
+            "Un combat décisif contre un vilain redoutable",
+            "Un discours politique",
+            "Un test de connaissances uniquement",
+            "Une épreuve d'endurance"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi les Quirks reflètent-ils la personnalité ?",
+          options: [
+            "Chaque Quirk symbolise forces, faiblesses et aspirations",
+            "Ils sont choisis au hasard",
+            "Ils n'ont aucune signification",
+            "Ils sont identiques pour tous"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment All Might influence-t-il les élèves ?",
+          options: [
+            "Il incarne l’idéal héroïque et inspire courage et justice",
+            "Il est décevant",
+            "Il n'a aucun effet",
+            "Il est seulement présent pour l'action"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel combat décisif impacte profondément Deku ?",
+          options: [
+            "Un affrontement crucial contre un antagoniste majeur",
+            "Un match amical",
+            "Une compétition de vitesse",
+            "Un combat sans victoire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’arc du School Festival renforce-t-il la cohésion ?",
+          options: [
+            "En offrant des moments de détente et de collaboration",
+            "En isolant chaque élève",
+            "En organisant une compétition interne",
+            "En annulant les activités de groupe"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue le passé familial de Todoroki ?",
+          options: [
+            "Il le pousse à chercher sa propre voie et à équilibrer ses pouvoirs",
+            "Il n'a aucune influence",
+            "Il le rend plus faible",
+            "Il est complètement oublié"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les flashbacks approfondissent-ils le passé des personnages ?",
+          options: [
+            "Ils éclairent les traumatismes et motivations",
+            "Ils sont rarement utilisés",
+            "Ils sont uniquement humoristiques",
+            "Ils interrompent l'action principale"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel dilemme moral majeur affronte Deku ?",
+          options: [
+            "Il doit choisir entre sacrifier une partie de lui-même pour protéger autrui ou laisser le mal prospérer",
+            "Il n'a aucun dilemme",
+            "Il choisit toujours la facilité",
+            "Il se bat sans réflexion"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’équipe collabore-t-elle face à une menace collective ?",
+          options: [
+            "Par une coordination tactique et un partage des rôles",
+            "Chacun se bat seul",
+            "Ils se retirent",
+            "Ils comptent uniquement sur leur force individuelle"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles inspirations pour la conception des costumes héroïques ?",
+          options: [
+            "Ils sont inspirés par des éléments culturels et symboliques reflétant la personnalité",
+            "Ils sont choisis au hasard",
+            "Ils sont identiques pour tous",
+            "Ils sont uniquement colorés"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les pouvoirs de Deku se développent-ils ?",
+          options: [
+            "Ils se renforcent grâce à un entraînement intensif et l’expérience acquise",
+            "Ils restent statiques",
+            "Ils diminuent avec le temps",
+            "Ils sont soudainement acquis sans effort"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment marquant du combat contre un antagoniste est illustré ?",
+          options: [
+            "Un affrontement décisif montrant la transformation de Deku",
+            "Un combat amical sans enjeux",
+            "Un duel sans conséquences",
+            "Un combat annulé par des événements externes"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences l’anime souligne-t-il par rapport au manga en action ?",
+          options: [
+            "L’anime offre des scènes d’action plus détaillées avec une animation fluide",
+            "Les scènes sont identiques",
+            "L'anime est moins dynamique",
+            "L'action est réduite à du texte"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les mentors dans la préparation des jeunes héros ?",
+          options: [
+            "Ils transmettent leur expérience et sagesse pour préparer les jeunes",
+            "Ils n'ont aucun rôle",
+            "Ils sont uniquement présents pour l'action",
+            "Ils interfèrent dans les plans des héros"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les thèmes de l’identité héroïque et de l’héritage sont-ils explorés ?",
+          options: [
+            "Par des choix difficiles, des sacrifices et l’évolution personnelle de Deku",
+            "Ils sont ignorés",
+            "Ils apparaissent uniquement en flashbacks",
+            "Ils sont secondaires"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles leçons Deku tire-t-il de ses échecs et victoires ?",
+          options: [
+            "Il apprend la persévérance, l’importance du travail d’équipe et la valeur du sacrifice",
+            "Il n'apprend rien",
+            "Il change d'avis sur tout",
+            "Il se contente de ses succès sans réfléchir"
+          ],
+          correct: 0
+        }
+      ],
+      dbz: [
+        {
+          question: "Quel est le nom complet du protagoniste et quelle est son origine ?",
+          options: [
+            "Son Goku, un Saiyan originaire de la planète Vegeta",
+            "Son Goku, un humain élevé dans les montagnes",
+            "Son Goku, un extraterrestre d'une autre galaxie",
+            "Son Goku, un robot construit par Bulma"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Goku découvre-t-il l’existence des Dragon Balls ?",
+          options: [
+            "En cherchant des trésors lors de ses aventures",
+            "En les trouvant dans un musée",
+            "En les fabriquant lui-même",
+            "En recevant un message mystérieux"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les Dragon Balls ?",
+          options: [
+            "Elles permettent d’invoquer Shenron pour exaucer des vœux",
+            "Elles sont utilisées comme armes",
+            "Elles n'ont aucune importance",
+            "Elles servent uniquement de décoration"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroule la première confrontation entre Goku et Piccolo ?",
+          options: [
+            "Par un combat intense marquant la lutte entre le bien et le mal",
+            "Par une simple discussion",
+            "Par un match de sport",
+            "Sans confrontation réelle"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles sont les bases de l’entraînement de Goku ?",
+          options: [
+            "Un entraînement physique rigoureux et l’apprentissage de techniques martiales traditionnelles",
+            "Un entraînement en lecture uniquement",
+            "Un entraînement axé sur la méditation",
+            "Un entraînement sans discipline"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Goku se transforme-t-il en Super Saiyan ?",
+          options: [
+            "La transformation est déclenchée par une émotion intense",
+            "Il la maîtrise dès sa naissance",
+            "Elle se produit automatiquement",
+            "Par un entraînement prolongé uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact la bataille contre Freezer a-t-elle sur Goku ?",
+          options: [
+            "Elle marque une étape décisive avec l’apparition de nouvelles formes",
+            "Elle n'a aucun impact",
+            "Elle le rend plus faible",
+            "Elle le fait renoncer aux combats"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la rivalité entre Goku et Vegeta est-elle centrale ?",
+          options: [
+            "Elle stimule les deux à se dépasser et atteindre de nouveaux niveaux",
+            "Elle n'existe pas",
+            "Elle est uniquement amicale",
+            "Elle est résolue dès le début"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime présente-t-il le Cell Game ?",
+          options: [
+            "Par des scènes de combat épiques rassemblant tous les Z Fighters",
+            "Par une simple conversation",
+            "Par un match sportif",
+            "Par des scènes d'entraînement uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles caractéristiques uniques le combat en Super Saiyan 3 présente-t-il ?",
+          options: [
+            "Une explosion d’énergie brute, endurance extrême et apparence capillaire spectaculaire",
+            "Une apparence modeste sans effets spéciaux",
+            "Une absence totale de puissance",
+            "Un style de combat très lent"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’énergie spirituelle est-elle représentée ?",
+          options: [
+            "Sous forme de ki, utilisé pour attaques, défenses et transformations",
+            "Comme une énergie électrique",
+            "Comme de l'eau",
+            "Comme une force mystérieuse sans explication"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel mécanisme explique la fusion entre Goku et Vegeta ?",
+          options: [
+            "La fusion combine leurs énergies pour former un guerrier plus puissant",
+            "C'est le résultat d'une addition simple",
+            "Elle n'a aucune explication",
+            "Elle est causée par un objet magique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles techniques emblématiques définissent Goku ?",
+          options: [
+            "Le Kamehameha, perfectionné au fil de ses aventures",
+            "Le Shoryuken",
+            "La Rasengan",
+            "La Destructo Disc"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Krillin dans l’équipe des Z Fighters ?",
+          options: [
+            "Il apporte soutien, humanité et sagesse précieuse",
+            "Il est l'ennemi principal",
+            "Il est uniquement comique",
+            "Il ne participe pas aux combats"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la transformation de Gohan est-elle illustrée ?",
+          options: [
+            "Par des combats intenses révélant sa puissance cachée",
+            "Par un entraînement facile",
+            "Par un discours inspirant",
+            "Par une simple apparition"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment marque le retour de Freezer ?",
+          options: [
+            "Son retour dramatique réintroduit une menace majeure",
+            "Il revient dans un rêve",
+            "Il apparaît en flashback",
+            "Il n'apparaît jamais"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’équipe se prépare-t-elle pour affronter Cell ?",
+          options: [
+            "Par un entraînement intensif et la mise au point de stratégies combinées",
+            "En se reposant",
+            "En se séparant",
+            "En ignorant Cell"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles conséquences la Genki-dama a-t-elle ?",
+          options: [
+            "Elle rassemble l’énergie de la vie pour créer une attaque décisive",
+            "Elle affaiblit les héros",
+            "Elle est inefficace",
+            "Elle se solde par un échec"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la transformation en Super Saiyan God diffère-t-elle ?",
+          options: [
+            "Elle offre une aura divine, une puissance transcendante et un design visuel impressionnant",
+            "Elle est moins puissante",
+            "Elle est identique à Super Saiyan",
+            "Elle est purement esthétique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Bulma dans l’avancement technologique ?",
+          options: [
+            "Elle conçoit des inventions permettant aux héros de repousser leurs limites",
+            "Elle est simplement décorative",
+            "Elle n'intervient pas dans les combats",
+            "Elle est un personnage secondaire sans importance"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime met-il en scène les combats inter-univers ?",
+          options: [
+            "Par des tournois épiques et des affrontements d’une ampleur cosmique",
+            "Sans scène de combat",
+            "Par des combats humoristiques",
+            "En noir et blanc uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences observe-t-on entre le manga et l’anime ?",
+          options: [
+            "L’anime allonge certaines scènes et accentue l’action pour une expérience immersive",
+            "Le manga est plus animé",
+            "Ils sont identiques",
+            "L’anime est plus statique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Goku utilise-t-il le Kaioken ?",
+          options: [
+            "Il amplifie temporairement sa puissance au risque d’un coût physique élevé",
+            "Il la maîtrise sans effort",
+            "Il ne l'utilise jamais",
+            "Il l'utilise uniquement en mode défensif"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle symbolique tient le Maître Roshi ?",
+          options: [
+            "Il représente la sagesse, l’expérience et l’esprit de discipline",
+            "Il est un simple instructeur",
+            "Il est absurde et comique",
+            "Il est l'antagoniste"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les scènes de sacrifice sont-elles traitées ?",
+          options: [
+            "Elles sont chargées d’émotion et renforcent le thème du courage",
+            "Elles sont ignorées",
+            "Elles sont traitées de manière humoristique",
+            "Elles se terminent toujours par une victoire facile"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement marque la fin de l’arc Cell ?",
+          options: [
+            "La victoire collective des Z Fighters scellant la défaite de Cell",
+            "Un combat sans issue",
+            "Le départ inattendu de Goku",
+            "La trahison d’un allié"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se conclut l’arc de Majin Buu ?",
+          options: [
+            "Par des sacrifices héroïques et une rédemption collective",
+            "Par une défaite totale",
+            "Par une trahison",
+            "Par un simple au revoir"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la Force de la Terre est-elle essentielle ?",
+          options: [
+            "Elle symbolise l’unité et l’énergie vitale qui permet de puiser la force",
+            "Elle est sans importance",
+            "Elle affaiblit les combattants",
+            "Elle est uniquement symbolique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime illustre-t-il l’amitié et la persévérance ?",
+          options: [
+            "Par des scènes poignantes où les héros se soutiennent mutuellement",
+            "En se concentrant uniquement sur l’action",
+            "En ignorant les relations",
+            "En montrant des compétitions individuelles uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel cliffhanger est laissé à la fin de Dragon Ball Z ?",
+          options: [
+            "Un suspense laissant présager de nouvelles aventures",
+            "Une fin complète",
+            "Un retour immédiat de tous les personnages",
+            "Une conclusion sans effet"
+          ],
+          correct: 0
+        }
+      ],
+      naruto: [
+        {
+          question: "Quel est le rêve de Naruto Uzumaki ?",
+          options: [
+            "Devenir Hokage pour être reconnu par tous",
+            "Venger son clan",
+            "Devenir médecin",
+            "Devenir un simple ninja"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Naruto obtient-il le pouvoir du démon renard ?",
+          options: [
+            "Il hérite de ce pouvoir dès sa naissance, scellé par le Quatrième Hokage",
+            "Il le gagne en combat",
+            "Il le reçoit par une incantation",
+            "Il ne possède pas ce pouvoir"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue l’équipe 7 dans son évolution ?",
+          options: [
+            "Elle forme la base de son apprentissage et de ses premières aventures ninja",
+            "Elle est un groupe d'antagonistes",
+            "Elle n’existe pas",
+            "Elle est uniquement composée de mentors"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroule l’examen de Chunin ?",
+          options: [
+            "Il teste la détermination et le dépassement de défis variés",
+            "C'est une simple formalité",
+            "Il consiste uniquement en un test écrit",
+            "Il ne comporte que des épreuves physiques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact l’attaque d’Orochimaru a-t-elle sur Konoha ?",
+          options: [
+            "Elle révèle les vulnérabilités du village et marque le début de conflits majeurs",
+            "Elle n’a aucun impact",
+            "Elle renforce la sécurité",
+            "Elle provoque immédiatement la paix"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la rivalité entre Naruto et Sasuke est-elle essentielle ?",
+          options: [
+            "Elle est le moteur de leur évolution et symbolise ambition et quête d’identité",
+            "Elle est insignifiante",
+            "Elle disparaît rapidement",
+            "Elle est uniquement humoristique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Kakashi Hatake en tant que mentor ?",
+          options: [
+            "Il transmet son savoir, sa discipline et son expérience aux jeunes ninjas",
+            "Il est un simple spectateur",
+            "Il donne uniquement des ordres",
+            "Il est un rival caché"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Naruto perfectionne-t-il sa technique de clone des ombres ?",
+          options: [
+            "Par un entraînement intensif et sa détermination",
+            "Sans effort particulier",
+            "En la remplaçant par une autre technique",
+            "Par hasard"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles motivations poussent l’Akatsuki ?",
+          options: [
+            "Capturer les démons intérieurs des ninjas, déclenchant des conflits majeurs",
+            "Chercher la gloire",
+            "Être pacifique",
+            "Sans motivation claire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime présente-t-il l’évolution de la relation entre Naruto et Sasuke ?",
+          options: [
+            "Par des confrontations répétées et des moments émotionnels forts",
+            "En les faisant toujours s'entraider",
+            "En supprimant leur relation",
+            "Par des flashbacks uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle occupe Jiraiya dans le développement de Naruto ?",
+          options: [
+            "Il transmet des techniques avancées et des valeurs de persévérance",
+            "Il est un antagoniste déguisé",
+            "Il n'intervient jamais",
+            "Il apparaît uniquement en flashback"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la transformation en mode Sage modifie-t-elle Naruto ?",
+          options: [
+            "Elle augmente considérablement sa force, sa vitesse et ses sens",
+            "Elle le rend plus lent",
+            "Elle a un effet négatif",
+            "Elle ne change rien"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment marque l’affrontement entre Naruto et Pain ?",
+          options: [
+            "Un combat riche en émotions symbolisant la rédemption du village",
+            "Un combat léger sans enjeux",
+            "Une simple conversation",
+            "Un duel amical"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi la quête de rédemption de Sasuke est-elle approfondie ?",
+          options: [
+            "Par des confrontations internes et externes montrant ses remords",
+            "Elle n'est jamais abordée",
+            "Il reste toujours en colère",
+            "Elle est ignorée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les villages ninja contribuent-ils à l’intrigue ?",
+          options: [
+            "Chaque village apporte ses traditions et conflits, enrichissant l’univers",
+            "Ils sont tous identiques",
+            "Ils n’ont aucune influence",
+            "Ils sont présentés comme des mythes"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles techniques de ninjutsu sont mises en avant ?",
+          options: [
+            "Des techniques emblématiques comme le Rasengan et le Chidori",
+            "Aucune technique n'est montrée",
+            "Les combats se font uniquement à mains nues",
+            "Les techniques sont toujours improvisées"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact la mort d’un personnage majeur a-t-elle sur Naruto ?",
+          options: [
+            "Elle renforce sa détermination et l'oblige à mûrir rapidement",
+            "Elle n'a aucun effet",
+            "Elle le fait sombrer dans la dépression",
+            "Elle est ignorée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’héritage du démon renard est-il abordé ?",
+          options: [
+            "Comme un fardeau et une source de pouvoir façonnant son destin",
+            "Comme un simple détail",
+            "Complètement effacé",
+            "Une bénédiction instantanée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement déclenche la Quatrième Grande Guerre Ninja ?",
+          options: [
+            "La conspiration de l’Akatsuki et les tensions entre villages",
+            "Un accident imprévu",
+            "Une simple dispute",
+            "La disparition d'un artefact"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment évolue la relation entre Naruto et Hinata ?",
+          options: [
+            "De l’admiration à une affection sincère et mature",
+            "Elle reste inchangée",
+            "Elle se transforme en rivalité",
+            "Elle disparaît rapidement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelles différences l’anime souligne-t-il par rapport au manga ?",
+          options: [
+            "L’ajout de scènes de combat et de détails émotionnels",
+            "Ils sont identiques",
+            "L’anime omet l’action",
+            "Il se concentre uniquement sur les dialogues"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’entraînement au Mont Myoboku est-il représenté ?",
+          options: [
+            "Comme une période intense de découverte pour canaliser l’énergie naturelle",
+            "Sans aucune difficulté",
+            "Rapidement oublié",
+            "Comme une aventure de vacances"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Shikamaru dans les stratégies de combat ?",
+          options: [
+            "Il planifie des actions tactiques grâce à son intelligence",
+            "Il est un combattant sans réflexion",
+            "Il ne participe pas aux stratégies",
+            "Il suit simplement les ordres"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la disparition de Jiraiya est-elle traitée ?",
+          options: [
+            "Avec une grande intensité émotionnelle marquant un tournant pour Naruto",
+            "Minimisée",
+            "Traitée de manière comique",
+            "Jamais abordée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le moment marquant de la réconciliation entre Naruto et Sasuke ?",
+          options: [
+            "Leur affrontement final qui les force à reconnaître leurs erreurs",
+            "Une conversation amicale",
+            "Un échange de regards",
+            "Un événement festif"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les techniques de ninjutsu évoluent-elles au fil de la série ?",
+          options: [
+            "Elles se perfectionnent grâce à l’entraînement et aux expériences de combat",
+            "Elles restent toujours les mêmes",
+            "Elles disparaissent progressivement",
+            "Elles changent sans explication"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les sceaux maudits dans l’intrigue ?",
+          options: [
+            "Ils représentent des obstacles que les ninjas doivent contrôler",
+            "Ils sont des bonus",
+            "Ils facilitent les combats",
+            "Ils n'apparaissent qu'en arrière-plan"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se conclut la Quatrième Grande Guerre Ninja ?",
+          options: [
+            "Par une victoire collective ouvrant la voie à une ère de paix et de reconstruction",
+            "Par une défaite totale",
+            "Par un accord sans combat",
+            "Par une trahison inattendue"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage secondaire contribue à la transformation de Naruto ?",
+          options: [
+            "Kakashi et Shikamaru, qui apportent soutien et stratégies",
+            "Un personnage qui disparaît rapidement",
+            "Un antagoniste clé",
+            "Un personnage comique sans importance"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la série aborde-t-elle les thèmes du destin et de la prophétie ?",
+          options: [
+            "Par des choix difficiles et des révélations sur l’avenir qui forcent à accepter son destin",
+            "En niant complètement ces thèmes",
+            "En les rendant superficiels",
+            "En les traitant uniquement en flashbacks"
+          ],
+          correct: 0
+        }
+      ],
+      chainsaw: [
+        {
+          question: "Quel est le nom du protagoniste et quelle est sa situation avant Chainsaw Man ?",
+          options: [
+            "Denji, un jeune homme endetté et isolé menant une vie difficile",
+            "Denji, un riche héritier sans soucis",
+            "Denji, un héros déjà célèbre",
+            "Denji, un scientifique renommé"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Denji acquiert-il ses pouvoirs de tronçonneuse ?",
+          options: [
+            "En fusionnant avec son chien-démon Pochita",
+            "En mangeant un fruit démoniaque",
+            "En subissant une expérience scientifique",
+            "En trouvant une arme magique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Makima dans l’orientation de Denji ?",
+          options: [
+            "Elle guide et manipule Denji pour servir ses propres desseins",
+            "Elle est simplement une collègue",
+            "Elle n'a aucun rôle particulier",
+            "Elle est la principale antagoniste"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’univers des Devil Hunters est-il présenté ?",
+          options: [
+            "Il est sombre, brutal et empreint d’humour noir",
+            "Il est joyeux et coloré",
+            "Il est uniquement tragique",
+            "Il est futuriste et technologique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact la relation entre Denji et Power a-t-elle sur l’histoire ?",
+          options: [
+            "Elle apporte une dimension humaine et renforce le développement de Denji",
+            "Elle n'a aucun impact",
+            "Elle crée uniquement des conflits",
+            "Elle affaiblit Denji"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi le style de combat de Denji se distingue-t-il ?",
+          options: [
+            "Il est direct, sauvage et brutal grâce à ses lames intégrées",
+            "Il est basé sur la magie",
+            "Il repose sur la furtivité",
+            "Il est entièrement défensif"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les Public Safety Devil Hunters ?",
+          options: [
+            "Ils organisent la lutte contre les démons pour protéger la société",
+            "Ils sont uniquement des mercenaires",
+            "Ils ne font rien",
+            "Ils sont des démons déguisés"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Denji jongle-t-il entre sa vie quotidienne et ses missions ?",
+          options: [
+            "En alternant une existence banale et des missions périlleuses, créant un fort contraste",
+            "En abandonnant sa vie quotidienne",
+            "Il vit uniquement pour les missions",
+            "Il ignore totalement ses missions"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle est la signification du pacte qui fait de Denji Chainsaw Man ?",
+          options: [
+            "Il scelle son destin en fusionnant son humanité avec la brutalité démoniaque",
+            "Il lui donne des pouvoirs sans conséquence",
+            "Il est annulé après quelques combats",
+            "Il le transforme en être sans émotions"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation illustre-t-elle les transformations de Denji ?",
+          options: [
+            "Par des effets visuels sanglants et dynamiques montrant l’évolution de ses pouvoirs",
+            "Sans changement visuel",
+            "Par des transitions de couleurs uniquement",
+            "Par des images statiques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Himeno dans le parcours de Denji ?",
+          options: [
+            "Elle agit comme mentor et alliée, apportant soutien et conseils",
+            "Elle est son antagoniste",
+            "Elle n'intervient jamais",
+            "Elle est uniquement décorative"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la série explore-t-elle la solitude de Denji ?",
+          options: [
+            "En montrant son combat intérieur et son besoin constant d’amour et d’acceptation",
+            "En ignorant ce thème",
+            "En le traitant uniquement dans des flashbacks",
+            "En le transformant en moment comique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement marque un tournant dans la quête de Denji ?",
+          options: [
+            "Une trahison ou une perte importante qui bouleverse sa vie",
+            "Un simple succès sans conséquence",
+            "Une rencontre amicale",
+            "Un moment de calme"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les scènes de combat contre les démons sont-elles mises en scène ?",
+          options: [
+            "Avec des animations dynamiques et une violence graphique accentuée",
+            "Sans aucun effet visuel",
+            "Avec des dessins statiques",
+            "En utilisant uniquement des filtres noir et blanc"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les autres membres des Devil Hunters ?",
+          options: [
+            "Ils complètent Denji en apportant leurs propres pouvoirs et forment une équipe soudée",
+            "Ils sont des obstacles",
+            "Ils sont secondaires",
+            "Ils agissent uniquement en arrière-plan"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment évolue la relation entre Denji et Makima ?",
+          options: [
+            "Elle se complexifie, mêlant admiration, manipulation et conflits intérieurs",
+            "Elle reste simple et pure",
+            "Elle disparaît rapidement",
+            "Elle est uniquement amicale"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi le pouvoir de Chainsaw Man se distingue-t-il ?",
+          options: [
+            "Il est brutal et permet de découper littéralement les adversaires",
+            "Il est plus faible",
+            "Il est uniquement défensif",
+            "Il ne fonctionne que dans certaines conditions"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation traite-t-elle les questions de moralité ?",
+          options: [
+            "En illustrant des choix difficiles et des conséquences émotionnelles",
+            "En ne traitant pas ces thèmes",
+            "En les minimisant pour se concentrer sur l'action",
+            "En les transformant en moments humoristiques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage apporte une touche d’humour dans cet univers sombre ?",
+          options: [
+            "Power, avec son attitude imprévisible",
+            "Makima, avec son humour sarcastique",
+            "Himeno, avec des blagues constantes",
+            "Un personnage mineur sans impact"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la violence graphique est-elle intégrée dans les scènes clés ?",
+          options: [
+            "Elle accentue le côté brutal et réaliste des combats avec des effets visuels marquants",
+            "Elle est atténuée",
+            "Elle est absente",
+            "Elle est suggérée uniquement par des sons"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les flashbacks dans le passé de Denji ?",
+          options: [
+            "Ils dévoilent des éléments clés de son histoire et expliquent ses motivations",
+            "Ils sont superflus",
+            "Ils interrompent l'intrigue",
+            "Ils montrent uniquement des souvenirs heureux"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment le conflit intérieur de Denji est-il illustré ?",
+          options: [
+            "Par des monologues intérieurs et des scènes d'hésitation intense",
+            "Par l'absence totale de conflit",
+            "Par des actions impulsives sans réflexion",
+            "Par des changements de tenue uniquement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle importance revêt l’ambiance sonore dans la création de tension ?",
+          options: [
+            "La musique et les effets sonores accentuent les émotions et renforcent l’intensité",
+            "L'ambiance sonore est insignifiante",
+            "Elle est utilisée uniquement dans les moments calmes",
+            "Elle est remplacée par des silences prolongés"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime différencie-t-il les types de démons ?",
+          options: [
+            "Chaque démon possède un design et des pouvoirs uniques",
+            "Tous les démons se ressemblent",
+            "Ils n'ont aucune caractéristique particulière",
+            "Ils sont tous identiques dans leur fonctionnement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment illustre un renversement décisif pour Denji ?",
+          options: [
+            "Un retournement lié à une trahison qui change radicalement l’intrigue",
+            "Un moment de calme",
+            "Une victoire facile",
+            "Un simple échec"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la notion de rédemption est-elle abordée ?",
+          options: [
+            "Par des choix difficiles et des sacrifices permettant de se racheter",
+            "Elle n'est jamais abordée",
+            "Elle est traitée de manière superficielle",
+            "Elle est toujours ignorée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue l’humour noir dans l’équilibre tonal ?",
+          options: [
+            "Il offre un contraste avec la violence et la tragédie, apportant des moments de légèreté",
+            "Il est totalement absent",
+            "Il domine au détriment du drame",
+            "Il est mal utilisé"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’évolution de l’identité de Denji est-elle symbolisée ?",
+          options: [
+            "Chaque combat révèle sa dualité entre humanité et bestialité",
+            "Elle reste toujours la même",
+            "Elle disparaît progressivement",
+            "Elle se reflète uniquement par des changements de couleur"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact la bataille finale a-t-elle sur Denji ?",
+          options: [
+            "Elle marque une transformation majeure, affirmant sa détermination",
+            "Elle ne change rien",
+            "Elle le rend plus faible",
+            "Elle est sans conséquence"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se conclut l’arc principal de Chainsaw Man ?",
+          options: [
+            "L’arc se termine sur une note ouverte, laissant entrevoir de nouvelles aventures",
+            "Il se termine par une conclusion définitive",
+            "Il se termine sans impact",
+            "Il se termine par un échec total"
+          ],
+          correct: 0
+        }
+      ],
+      blackclover: [
+        {
+          question: "Quel rêve anime Asta malgré son absence de magie ?",
+          options: [
+            "Devenir le Roi Magique en prouvant que la détermination surpasse le manque de pouvoirs",
+            "Devenir riche et célèbre",
+            "Fuir son village",
+            "Devenir un simple soldat"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Asta compense-t-il son handicap ?",
+          options: [
+            "Par un entraînement acharné et sa capacité unique d’utiliser l’anti-magie",
+            "En se reposant sur les autres",
+            "En utilisant la technologie uniquement",
+            "En devenant commerçant"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel est le rôle de Yuno et comment contraste-t-il avec Asta ?",
+          options: [
+            "Yuno est le rival talentueux doté d’un pouvoir magique exceptionnel",
+            "Yuno est son frère jumeau",
+            "Yuno est un simple serviteur",
+            "Yuno est un mentor pour Asta"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime présente-t-il l’acquisition des grimoires ?",
+          options: [
+            "Par des cérémonies et des épreuves symboliques",
+            "Par un simple don sans effort",
+            "Par des concours de popularité",
+            "Sans explication"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue la Chevalerie Magique ?",
+          options: [
+            "Maintenir l’ordre et former les mages pour protéger le royaume",
+            "Être uniquement décorative",
+            "Opérer dans l'ombre sans interaction",
+            "Être une force rebelle"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Asta progresse-t-il malgré l’absence de magie ?",
+          options: [
+            "Grâce à un entraînement intensif et l’utilisation de l’anti-magie",
+            "Par chance",
+            "En se reposant sur ses alliés",
+            "En obtenant des pouvoirs par accident"
+          ],
+          correct: 0
+        },
+        {
+          question: "En quoi l’anti-magie d’Asta est-elle unique ?",
+          options: [
+            "Elle annule les sorts adverses et offre un avantage inattendu",
+            "Elle est peu efficace",
+            "Elle est partagée par tous",
+            "Elle est trop puissante et déséquilibrée"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se déroule l’entraînement au sein de l’académie ?",
+          options: [
+            "Par des séances intensives renforçant leur détermination et aptitudes",
+            "De manière très relaxante",
+            "Sans aucun effort particulier",
+            "En se livrant à des compétitions inutiles"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel impact ont les royaumes magiques sur l’histoire ?",
+          options: [
+            "Ils influencent la politique et les alliances, rendant l’intrigue riche et complexe",
+            "Ils n'ont aucun impact",
+            "Ils simplifient l'intrigue",
+            "Ils sont uniquement des décors"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime met-il en scène les duels entre mages et chevaliers ?",
+          options: [
+            "Avec des combats dynamiques et des effets visuels marquants",
+            "Sans aucun effet particulier",
+            "Par des dialogues uniquement",
+            "De manière statique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel personnage secondaire est un soutien crucial pour Asta ?",
+          options: [
+            "Noelle Silva, qui évolue pour devenir une alliée essentielle",
+            "Yami Sukehiro uniquement",
+            "Un personnage inconnu",
+            "Le roi du royaume"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment évolue la relation entre Asta et Yami Sukehiro ?",
+          options: [
+            "Elle passe d’un rapport strictif à une relation basée sur la confiance et la camaraderie",
+            "Elle reste conflictuelle",
+            "Elle disparaît complètement",
+            "Elle est uniquement professionnelle"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle symbolique se cache derrière le grimoire d’Asta ?",
+          options: [
+            "Il représente son potentiel unique et son destin exceptionnel",
+            "C'est un simple objet magique sans signification",
+            "Il est utilisé uniquement pour le combat",
+            "Il symbolise une malédiction"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment les scènes de combat sont-elles mises en valeur ?",
+          options: [
+            "Par des animations fluides, des effets de lumière et une mise en scène rythmée",
+            "Sans aucun effort visuel",
+            "En étant très statiques",
+            "Par des illustrations fixes"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle occupent les guildes dans Black Clover ?",
+          options: [
+            "Elles organisent les missions et influencent la lutte pour le pouvoir",
+            "Elles sont inexistantes",
+            "Elles divertissent uniquement",
+            "Elles sont uniquement symboliques"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment Asta évolue-t-il en héros ?",
+          options: [
+            "Il surmonte ses faiblesses et gagne progressivement le respect",
+            "Il reste toujours le même",
+            "Il se retire progressivement",
+            "Il devient un antagoniste"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement marque un tournant dans l’arc de la rébellion ?",
+          options: [
+            "Un soulèvement contre l’autorité magique obligeant Asta et ses alliés à se battre pour une nouvelle ère",
+            "Une simple fête",
+            "Un désaccord mineur",
+            "Un changement de décor sans conséquence"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la confrontation entre magie noire et anti-magie est-elle représentée ?",
+          options: [
+            "Par des duels épiques où l’anti-magie d’Asta annule les sorts adverses",
+            "Par des combats sans enjeux",
+            "Par des dialogues uniquement",
+            "Sans aucune confrontation"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle joue Noelle Silva dans l’intrigue ?",
+          options: [
+            "Elle évolue pour devenir une combattante redoutable et une alliée stratégique",
+            "Elle est toujours faible",
+            "Elle ne participe pas aux combats",
+            "Elle est uniquement là pour l'humour"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la dynamique entre Asta et Yuno influence-t-elle l’histoire ?",
+          options: [
+            "Leur rivalité constructive les pousse à se surpasser et à s’entraider",
+            "Ils sont en conflit constant",
+            "Ils ne se rencontrent jamais",
+            "Ils ne font qu'une compétition sans effet"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quelle importance ont les alliances entre factions magiques ?",
+          options: [
+            "Elles influencent directement le pouvoir et la stabilité du royaume",
+            "Elles n'ont aucune importance",
+            "Elles sont des distractions",
+            "Elles affaiblissent les personnages"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation met-elle en scène l’évolution des pouvoirs de Yuno ?",
+          options: [
+            "Par une progression continue montrant sa maîtrise accrue de la magie",
+            "En montrant une stagnation",
+            "En omettant de développer son personnage",
+            "En le faisant reculer dans ses pouvoirs"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle tient le Conseil Magique ?",
+          options: [
+            "Il exerce le pouvoir suprême en régulant l’usage de la magie et en imposant l’ordre",
+            "Il est corrompu et inefficace",
+            "Il n'existe pas",
+            "Il est uniquement symbolique"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment la série aborde-t-elle le thème du destin ?",
+          options: [
+            "En montrant que malgré un destin tracé, les choix individuels peuvent changer l’avenir",
+            "En affirmant que le destin est inévitable",
+            "En l'ignorant complètement",
+            "En le présentant comme une fatalité sans espoir"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel moment marque la transformation d’Asta en véritable héros ?",
+          options: [
+            "Lors d’un combat décisif où il surmonte ses limites",
+            "Lors d'un simple entraînement",
+            "Sans aucun combat marquant",
+            "Lors d'une fête d'anniversaire"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’anime intègre-t-il des touches humoristiques ?",
+          options: [
+            "Par des dialogues et situations inattendues qui allègent la tension",
+            "Sans aucune tentative d'humour",
+            "En se moquant constamment des personnages",
+            "En réduisant l'action à des blagues"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel rôle jouent les sacrifices individuels ?",
+          options: [
+            "Ils illustrent le prix de la lutte pour la justice et renforcent la détermination",
+            "Ils ne jouent aucun rôle",
+            "Ils sont ignorés",
+            "Ils affaiblissent les protagonistes"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment l’adaptation traite-t-elle la question du pouvoir absolu ?",
+          options: [
+            "En montrant comment le pouvoir peut corrompre et mener à des excès",
+            "En glorifiant le pouvoir sans conséquences",
+            "En le rendant toujours bénéfique",
+            "En le supprimant complètement"
+          ],
+          correct: 0
+        },
+        {
+          question: "Quel événement final bouleverse l’équilibre de l’univers de Black Clover ?",
+          options: [
+            "Un affrontement majeur qui renverse l’ordre établi et prépare une nouvelle ère",
+            "Un combat insignifiant",
+            "Un événement festif sans conséquence",
+            "Une trahison mineure"
+          ],
+          correct: 0
+        },
+        {
+          question: "Comment se conclut l’arc principal de Black Clover ?",
+          options: [
+            "Par un combat final épique scellant le destin des protagonistes et ouvrant la voie à un renouveau",
+            "Par une fin abrupte et inachevée",
+            "Sans conclusion notable",
+            "Par un simple au revoir"
+          ],
+          correct: 0
+        }
+      ]
+    };
+
+    // Mapping des catégories vers un thème (classe CSS) et titre personnalisé
+    const themes = {
+      slime: { title: "Moi, quand je me réincarne en Slime", themeClass: "theme-slime" },
+      jujutsu: { title: "Jujutsu Kaisen", themeClass: "theme-jujutsu" },
+      onepiece: { title: "One Piece", themeClass: "theme-onepiece" },
+      demonslayer: { title: "Demon Slayer (Kimetsu no Yaiba)", themeClass: "theme-demonslayer" },
+      mha: { title: "My Hero Academia", themeClass: "theme-mha" },
+      dbz: { title: "Dragon Ball", themeClass: "theme-dbz" },
+      naruto: { title: "Naruto", themeClass: "theme-naruto" },
+      chainsaw: { title: "Chainsaw Man", themeClass: "theme-chainsaw" },
+      blackclover: { title: "Black Clover", themeClass: "theme-blackclover" }
+    };
+
+    // Global object pour stocker les scores par quiz (chaque quiz a 30 questions)
+    const globalScores = {}; // ex: { slime: 25, naruto: 18, ... }
+
+    // Fonction de navigation : affiche la page dont l'ID est passée en paramètre
+    function showPage(pageId) {
+      // Masquer toutes les pages
+      document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+      // Afficher la page demandée
+      document.getElementById(pageId).classList.add("active");
+    }
+
+    // Met à jour le score général affiché sur la page d'accueil
+    function updateGlobalScoreDisplay() {
+      const scoreDiv = document.getElementById("globalScoreDisplay");
+      const attempted = Object.keys(globalScores).length;
+      if(attempted === 0) {
+        scoreDiv.textContent = "Score général : Aucun quiz tenté pour le moment.";
+      } else {
+        let totalScore = 0;
+        for(let key in globalScores) {
+          totalScore += globalScores[key];
+        }
+        const percentage = Math.round((totalScore / (attempted * 30)) * 100);
+        scoreDiv.textContent = `Score général : ${totalScore} / ${attempted * 30} (${percentage}%) 🎉`;
+      }
+    }
+
+    // Fonction pour générer une page quiz pour une catégorie donnée
+    function generateQuizPage(categoryKey) {
+      const data = quizData[categoryKey];
+      const theme = themes[categoryKey];
+      // Créer le conteneur de la page
+      const pageDiv = document.createElement("div");
+      pageDiv.id = "page-" + categoryKey;
+      pageDiv.className = "page " + theme.themeClass;
+      
+      // Bouton de retour à l'accueil
+      const backBtn = document.createElement("button");
+      backBtn.className = "back-btn";
+      backBtn.textContent = "← Retour à l'accueil";
+      backBtn.onclick = () => showPage("home-page");
+      pageDiv.appendChild(backBtn);
+      
+      // Conteneur principal du quiz
+      const quizContainer = document.createElement("div");
+      quizContainer.className = "quiz-container";
+      
+      // Titre du quiz avec des emojis décoratifs
+      const title = document.createElement("h2");
+      title.textContent = theme.title + " ⭐️🚀";
+      quizContainer.appendChild(title);
+      
+      // Pour chaque question, créer un bloc
+      data.forEach((q, qIndex) => {
+        const questionBlock = document.createElement("div");
+        questionBlock.className = "question-block";
+        // Stockera la réponse choisie pour cette question
+        questionBlock.dataset.answered = "false";
+        questionBlock.dataset.correct = q.options[q.correct]; // texte de la bonne réponse
+
+        const questionText = document.createElement("div");
+        questionText.className = "question-text";
+        questionText.textContent = q.question;
+        questionBlock.appendChild(questionText);
+
+        // Options (mélanger les options)
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "options";
+        const optionsShuffled = [...q.options].sort(() => Math.random() - 0.5);
+        optionsShuffled.forEach(option => {
+          const btn = document.createElement("button");
+          btn.className = "option-btn";
+          btn.textContent = option;
+          btn.onclick = () => {
+            if(questionBlock.dataset.answered === "true") return;
+            questionBlock.dataset.answered = "true";
+            // Désactiver toutes les options de cette question
+            optionsContainer.querySelectorAll("button").forEach(b => b.disabled = true);
+            if(option === q.options[q.correct]) {
+              btn.classList.add("correct");
+              // Lancer les confettis pour féliciter
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+              });
+            } else {
+              btn.classList.add("incorrect");
+            }
+          };
+          optionsContainer.appendChild(btn);
+        });
+        questionBlock.appendChild(optionsContainer);
+        quizContainer.appendChild(questionBlock);
+      });
+      
+      // Bouton de soumission du quiz
+      const submitBtn = document.createElement("button");
+      submitBtn.className = "submit-btn";
+      submitBtn.textContent = "Soumettre le quiz";
+      submitBtn.onclick = () => {
+        let score = 0;
+        // Parcourir chaque question et compter les réponses correctes
+        quizContainer.querySelectorAll(".question-block").forEach(qBlock => {
+          const correctAnswer = qBlock.dataset.correct;
+          const answered = qBlock.dataset.answered;
+          if(answered === "true") {
+            // Vérifier le bouton qui a la classe "correct"
+            const selected = qBlock.querySelector(".option-btn.correct");
+            if(selected) {
+              score++;
+            }
+          }
+        });
+        // Stocker le score global pour cette catégorie
+        globalScores[categoryKey] = score;
+        // Afficher le score pour ce quiz
+        let percentage = Math.round((score / data.length) * 100);
+        let scoreDisplay = document.createElement("div");
+        scoreDisplay.className = "score-display";
+        scoreDisplay.innerHTML = `Votre score pour ${theme.title} : <strong>${score} / ${data.length}</strong> (${percentage}%) 🎉`;
+        // Si un score existe déjà, le remplacer
+        const existingScore = quizContainer.querySelector(".score-display");
+        if(existingScore) {
+          quizContainer.replaceChild(scoreDisplay, existingScore);
+        } else {
+          quizContainer.appendChild(scoreDisplay);
+        }
+        // Mettre à jour le score général sur la page d'accueil
+        updateGlobalScoreDisplay();
+        // Désactiver le bouton de soumission pour éviter les doubles soumissions
+        submitBtn.disabled = true;
+      };
+      quizContainer.appendChild(submitBtn);
+      
+      pageDiv.appendChild(quizContainer);
+      return pageDiv;
+    }
+
+    // Générer toutes les pages quiz et les ajouter dans le conteneur "quiz-pages-container"
+    const quizPagesContainer = document.getElementById("quiz-pages-container");
+    for (const categoryKey in quizData) {
+      const page = generateQuizPage(categoryKey);
+      quizPagesContainer.appendChild(page);
+    }
+  </script>
+</body>
+</html>
